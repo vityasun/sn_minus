@@ -29,7 +29,9 @@ function SlashMoon.IncludeFile(path, realm)
     end
 end
 
---- Рекурсивно подключает все .lua файлы папки (по алфавиту, сначала файлы, затем подпапки).
+local REALM_ORDER = { ["sh_"] = 1, ["sv_"] = 2, ["cl_"] = 3 }
+
+--- Рекурсивно подключает все .lua файлы папки (sh_ -> sv_ -> cl_, внутри по алфавиту; затем подпапки).
 -- @param folder string путь к папке относительно lua/
 -- @param recursive boolean обходить ли подпапки
 -- @param exclude table|nil множество имен файлов, которые нужно пропустить
@@ -39,10 +41,22 @@ function SlashMoon.IncludeFolder(folder, recursive, exclude)
 
     local files, folders = file.Find(folder .. "*", "LUA", "nameasc")
 
+    -- Внутри папки сначала общие файлы, затем серверные, затем клиентские:
+    -- cl_/sv_ файлы опираются на таблицы, которые объявляют sh_ файлы.
+    local queue = {}
     for _, name in ipairs(files or {}) do
         if string.EndsWith(name, ".lua") and not exclude[name] and not exclude[folder .. name] then
-            SlashMoon.IncludeFile(folder .. name)
+            queue[#queue + 1] = name
         end
+    end
+    table.sort(queue, function(a, b)
+        local ra, rb = REALM_ORDER[string.sub(a, 1, 3)] or 1, REALM_ORDER[string.sub(b, 1, 3)] or 1
+        if ra ~= rb then return ra < rb end
+        return a < b
+    end)
+
+    for _, name in ipairs(queue) do
+        SlashMoon.IncludeFile(folder .. name)
     end
 
     if recursive then

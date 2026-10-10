@@ -19,9 +19,6 @@ local function IsAdminAllowed(ply)
     return IsValid(ply) and SlashMoon.Admin.HasPermission(ply, "slashmoon_tasks_admin")
 end
 
--- === Добавляем клиентский файл ===
-AddCSLuaFile("sn_tasks/admin/cl_admin_inv.lua")
-
 -- === СЕТЕВЫЕ СТРОКИ ===
 util.AddNetworkString("SN_AdminInv_Open")
 util.AddNetworkString("SN_AdminInv_GiveItem")

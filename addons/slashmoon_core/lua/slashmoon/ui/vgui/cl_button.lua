@@ -119,7 +119,12 @@ function PANEL:Paint(w, h)
     local r = UI.Scale(self.Radius)
 
     local accent = self.AccentColor or colors[VARIANT_ACCENT[self.Variant]] or colors.Accent
-    local bg, fg, outline = self._bg, self._fg, self._outline
+    -- Буферы цветов создаются лениво: Paint может прийти раньше Init
+    -- (автообновление Lua, панели, созданные до перезагрузки файла)
+    local bg = self._bg or Color(0, 0, 0)
+    local fg = self._fg or Color(0, 0, 0)
+    local outline = self._outline or Color(0, 0, 0)
+    self._bg, self._fg, self._outline = bg, fg, outline
 
     if not enabled then
         bg.r, bg.g, bg.b, bg.a = colors.Surface.r, colors.Surface.g, colors.Surface.b, 160
@@ -239,7 +244,8 @@ function ICON:Paint(w, h)
     end
     Draw.RoundedOutline(r, 0, 0, w, h, colors.Border)
 
-    local fg = self._fg
+    local fg = self._fg or Color(0, 0, 0)
+    self._fg = fg
     if not enabled then
         fg.r, fg.g, fg.b, fg.a = colors.TextDisabled.r, colors.TextDisabled.g, colors.TextDisabled.b, 255
     elseif self.Active then
