@@ -161,6 +161,9 @@ SlashMoon.UI.CreateFont("MyFont", 24, 700) -- шрифт "SlashMoon.MyFont", п�
 
 Базовые шрифты: `SlashMoon.Title`, `Header`, `Subheader`, `Text`, `TextBold`, `Small`, `Tiny`, `Button`.
 
+Семейство по умолчанию — Montserrat (`SlashMoon.UI.FontFamily`). Файлы шрифта в репозитории не хранятся:
+они приходят с контентом из Workshop. Без них GMod подставит системный шрифт, интерфейс продолжит работать.
+
 Стиль по умолчанию — фирменный острый: прямые углы, акцентная полоса 4px слева, тонкая обводка,
 которая разгорается при наведении. `Draw.RoundedBox` / `Draw.RoundedOutline` в этом режиме рисуют
 обычные прямоугольники. Скругления можно включить: `SlashMoon.UI.Sharp = false` (радиус — `SlashMoon.UI.Radius`).

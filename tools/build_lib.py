@@ -34,8 +34,8 @@ LIBRARY = [
     "lua/slashmoon/core",
     "lua/slashmoon/ui",
     "lua/slashmoon/admin",
-    "resource/fonts",
 ]
+# Ресурсы (шрифты Montserrat и т.п.) в репозитории не хранятся — они в Workshop
 
 ADDON_JSON = {
     "title": "SlashMoon Lib",
@@ -50,7 +50,6 @@ ADDON_JSON = {
 # Файлы из корня репозитория, которые кладутся рядом с библиотекой
 EXTRA = {
     "LICENSE": "LICENSE",
-    "licenses/Montserrat-OFL.txt": "licenses/Montserrat-OFL.txt",
     "docs/LIBRARY.md": "README.md",
 }
 
