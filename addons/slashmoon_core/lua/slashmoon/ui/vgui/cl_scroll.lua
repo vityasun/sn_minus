@@ -1,7 +1,7 @@
 -- Written for: SlashMoon. By: VIKA & Ronni
 -- ========================================================
 -- SlashMoon UI :: скролл-панель (SlashMoon.Scroll)
--- DScrollPanel со стилизованным скроллбаром и плавной прокруткой колесом.
+-- DScrollPanel с тонким акцентным скроллбаром и плавной прокруткой колесом.
 -- ========================================================
 
 local UI = SlashMoon.UI
@@ -14,18 +14,13 @@ function PANEL:Init()
     self.ScrollStep = UI.Scale(90)
 
     local vbar = self:GetVBar()
-    vbar:SetWide(UI.Scale(6))
+    vbar:SetWide(math.max(3, UI.Scale(5)))
     vbar:SetHideButtons(true)
-    vbar._hover = 0
 
-    vbar.Paint = function(s, w, h)
-        Draw.RoundedBox(math.floor(w / 2), 0, 0, w, h, Color(colors.Header.r, colors.Header.g, colors.Header.b, 120))
-    end
-
-    vbar.btnGrip._col = Color(0, 0, 0)
+    -- Острый стиль: без дорожки, сплошной акцентный ползунок
+    vbar.Paint = function() end
     vbar.btnGrip.Paint = function(grip, w, h)
-        local hov = UI.Animate(vbar, "_hover", (grip:IsHovered() or vbar.Dragging) and 1 or 0)
-        Draw.RoundedBox(math.floor(w / 2), 0, 0, w, h, UI.LerpColor(hov, colors.AccentDim, colors.Accent, grip._col))
+        Draw.Box(0, 0, w, h, colors.Accent)
         return true
     end
 

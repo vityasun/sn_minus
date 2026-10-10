@@ -7,7 +7,7 @@
 --   frame:Center()
 --   frame:SetHeader("ЗАГОЛОВОК")
 --
--- Возможности: шапка с заголовком/иконкой, кнопка закрытия, скругления,
+-- Возможности: шапка с заголовком/иконкой, неоновая линия сверху, кнопка закрытия "X",
 -- плавное появление/исчезновение (альфа + сдвиг), закрытие по ESC,
 -- перетаскивание за шапку, размытие фона.
 -- ========================================================
@@ -45,20 +45,13 @@ function PANEL:Init()
     self.CloseBtn = vgui.Create("DButton", self)
     self.CloseBtn:SetText("")
     self.CloseBtn._hover = 0
+    -- Квадрат во всю высоту шапки: "X", красная заливка при наведении
     self.CloseBtn.Paint = function(btn, w, h)
-        local hov = UI.Animate(btn, "_hover", btn:IsHovered() and 1 or 0)
-        local r = UI.GetRadius(4)
-        if hov > 0.01 then
-            Draw.RoundedBox(r, 0, 0, w, h, Color(colors.Danger.r, colors.Danger.g, colors.Danger.b, 200 * hov))
+        local hovered = btn:IsHovered()
+        if hovered then
+            Draw.Box(0, 0, w, h, Color(colors.Danger.r, colors.Danger.g, colors.Danger.b, 200))
         end
-        local col = UI.LerpColor(hov, colors.TextMuted, colors.Text)
-        local s = math.floor(math.min(w, h) * 0.18)
-        local cx, cy = w / 2, h / 2
-        surface.SetDrawColor(col)
-        for i = -1, 1 do
-            surface.DrawLine(cx - s + i, cy - s, cx + s + i, cy + s)
-            surface.DrawLine(cx + s + i, cy - s, cx - s + i, cy + s)
-        end
+        Draw.Text("X", "SlashMoon.Header", w / 2, h / 2, hovered and colors.Text or colors.TextMuted, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
     end
     self.CloseBtn.DoClick = function()
         UI.PlaySound("Click")
@@ -201,10 +194,9 @@ function PANEL:OnMousePressed(code)
 end
 
 function PANEL:PerformLayout(w, h)
-    local size = math.floor(self.HeaderHeight * 0.7)
-    local margin = math.floor((self.HeaderHeight - size) / 2)
+    local size = self.HeaderHeight
     self.CloseBtn:SetSize(size, size)
-    self.CloseBtn:SetPos(w - size - margin, margin)
+    self.CloseBtn:SetPos(w - size, 0)
 end
 
 function PANEL:Paint(w, h)
@@ -218,9 +210,8 @@ function PANEL:Paint(w, h)
     if self.m_bShowHeader then
         local hh = self.HeaderHeight
         Draw.RoundedBox(r, 0, 0, w, hh, colors.Header, true, true, false, false)
-        Draw.Box(0, hh - 2, w, 2, colors.Accent)
 
-        local x = UI.Scale(18)
+        local x = UI.Scale(20)
         if self.Icon and not self.Icon:IsError() then
             local is = math.floor(hh * 0.5)
             Draw.Icon(self.Icon, x, (hh - is) / 2, is, is, colors.Text)
@@ -234,6 +225,9 @@ function PANEL:Paint(w, h)
     end
 
     Draw.RoundedOutline(r, 0, 0, w, h, colors.Border)
+
+    -- Неоновая линия по верхнему краю окна
+    Draw.Box(0, 0, w, 2, colors.Accent)
 end
 
 vgui.Register("SlashMoon.Frame", PANEL, "DFrame")

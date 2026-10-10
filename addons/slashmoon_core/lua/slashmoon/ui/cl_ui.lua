@@ -39,6 +39,7 @@ end
 
 --- Масштабированное скругление по умолчанию.
 function UI.GetRadius(px)
+    if UI.Sharp then return 0 end
     return UI.Scale(px or UI.Radius)
 end
 

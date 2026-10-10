@@ -157,17 +157,21 @@ SlashMoon.UI.CreateFont("MyFont", 24, 700) -- шрифт "SlashMoon.MyFont", п�
 
 Базовые шрифты: `SlashMoon.Title`, `Header`, `Subheader`, `Text`, `TextBold`, `Small`, `Tiny`, `Button`.
 
+Стиль по умолчанию — фирменный острый: прямые углы, акцентная полоса 4px слева, тонкая обводка,
+которая разгорается при наведении. `Draw.RoundedBox` / `Draw.RoundedOutline` в этом режиме рисуют
+обычные прямоугольники. Скругления можно включить: `SlashMoon.UI.Sharp = false` (радиус — `SlashMoon.UI.Radius`).
+
 ### Компоненты
 
 Создание: `SlashMoon.UI.Create("Button", parent)` или `vgui.Create("SlashMoon.Button", parent)`.
 
 | Компонент | Назначение |
 | --- | --- |
-| `Frame` | окно: шапка, иконка, кнопка закрытия, скругления, анимация открытия/закрытия, ESC, перетаскивание |
+| `Frame` | окно: шапка, неоновая линия сверху, иконка, кнопка закрытия «X», анимация открытия/закрытия, ESC, перетаскивание |
 | `Panel` / `Container` | карточка с фоном из палитры / прозрачный контейнер |
 | `Label`, `Header`, `Divider` | текст, заголовок секции, разделитель |
 | `SettingRow` | строка настройки: название, описание, элемент справа |
-| `Button` | варианты `primary` / `secondary` / `ghost` / `success` / `danger`; состояния Default / Hover / Active / Disabled; иконки |
+| `Button` | фирменная плашка с полосой слева; варианты `primary` / `secondary` / `ghost` / `success` / `danger` (цвет полосы и обводки); состояния Default / Hover / Active / Disabled; иконки |
 | `IconButton` | квадратная кнопка с иконкой или символом |
 | `Toggle`, `Checkbox` | переключатель и чекбокс |
 | `SliderBar`, `Slider` | ползунок и ползунок с подписью (совместим с DNumSlider) |

@@ -15,6 +15,8 @@ local UI = SlashMoon.UI
 local Draw = UI.Draw
 local colors = UI.Colors
 
+local DrawKnob
+
 -- ========================================================
 -- SlashMoon.Toggle
 --   local t = SlashMoon.UI.Create("Toggle", parent)
@@ -66,20 +68,19 @@ function TOGGLE:Paint(w, h)
     local t = UI.Animate(self, "_anim", self.Value and 1 or 0, 14)
     local hov = UI.Animate(self, "_hover", (enabled and self:IsHovered()) and 1 or 0)
 
-    local trackH = h
-    local r = math.floor(trackH / 2)
-    local track = UI.LerpColor(t, colors.BorderNeutral, colors.Accent, self._track)
-    if not enabled then track.a = 90 end
-
-    Draw.RoundedBox(r, 0, 0, w, trackH, track)
-    if hov > 0.01 then
-        Draw.RoundedBox(r, 0, 0, w, trackH, Color(255, 255, 255, 20 * hov))
+    -- Острый стиль: темная дорожка, заливка акцентом, квадратный ползунок
+    local accent = enabled and colors.Accent or colors.TextDisabled
+    Draw.Box(0, 0, w, h, colors.Header)
+    if t > 0.01 then
+        Draw.Box(0, 0, w * t, h, Color(accent.r, accent.g, accent.b, 200 * t))
     end
+    local outline = UI.LerpColor(math.max(hov, t), colors.BorderNeutral, accent, self._track)
+    Draw.Outline(0, 0, w, h, outline)
 
-    local pad = math.max(2, math.floor(h * 0.12))
+    local pad = math.max(2, math.floor(h * 0.15))
     local knob = h - pad * 2
     local x = pad + (w - knob - pad * 2) * t
-    Draw.Circle(x + knob / 2, h / 2, knob / 2, enabled and colors.Text or colors.TextMuted)
+    Draw.Box(x, pad, knob, knob, enabled and colors.Text or colors.TextMuted)
 end
 
 vgui.Register("SlashMoon.Toggle", TOGGLE, "DButton")
@@ -176,6 +177,13 @@ vgui.Register("SlashMoon.Checkbox", CHECK, "DButton")
 -- ========================================================
 local BAR = {}
 
+-- Квадратный ползунок оригинального SN_Slider: акцентный квадрат с темным кантом
+function DrawKnob(x, y, w, h, accent, hov)
+    Draw.Box(x, y, w, h, Color(20, 20, 20, 255))
+    Draw.Outline(x, y, w, h, accent)
+    Draw.Box(x + 2, y + 2, w - 4, h - 4, hov and hov > 0.5 and UI.LerpColor(0.3, accent, colors.Text) or accent)
+end
+
 function BAR:Init()
     self.Min, self.Max = 0, 1
     self.Decimals = 2
@@ -242,18 +250,20 @@ end
 function BAR:Paint(w, h)
     local enabled = self:IsEnabled()
     local hov = UI.Animate(self, "_hover", (enabled and (self:IsHovered() or self.Dragging)) and 1 or 0)
-    local trackH = math.max(4, math.floor(h * 0.3))
+    local trackH = math.max(4, math.floor(h * 0.35))
     local knob = math.floor(h * 0.7)
-    local y = (h - trackH) / 2
+    local y = math.floor((h - trackH) / 2)
     local fill = self:GetSlideX()
     local accent = enabled and colors.Accent or colors.TextDisabled
 
-    Draw.RoundedBox(math.floor(trackH / 2), knob / 2, y, w - knob, trackH, colors.Header)
-    Draw.RoundedBox(math.floor(trackH / 2), knob / 2, y, (w - knob) * fill, trackH, accent)
+    local half = math.floor(knob / 2)
+    Draw.Box(half, y, w - knob, trackH, Color(0, 0, 0, 200))
+    Draw.Box(half, y, (w - knob) * fill, trackH, accent)
+    Draw.Outline(half, y, w - knob, trackH, Color(accent.r, accent.g, accent.b, 150))
 
-    local kx = knob / 2 + (w - knob) * fill
-    Draw.Circle(kx, h / 2, knob / 2 + hov * UI.Scale(2), accent)
-    Draw.Circle(kx, h / 2, knob / 2 - UI.Scale(4), colors.Text)
+    local kx = math.floor((w - knob) * fill)
+    local ky = math.floor((h - knob) / 2)
+    DrawKnob(kx, ky, knob, knob, accent, hov)
 end
 
 vgui.Register("SlashMoon.SliderBar", BAR, "Panel")
@@ -275,22 +285,20 @@ function SLIDER:Init()
     self.TextArea:SetTextColor(colors.Text)
     self.TextArea:SetWide(UI.Scale(56))
     self.TextArea.Paint = function(s, w, h)
-        Draw.RoundedBox(UI.Scale(4), 0, 0, w, h, colors.Header)
         s:DrawTextEntryText(colors.Text, colors.Accent, colors.Text)
     end
 
     self.Slider.Paint = function(s, w, h)
-        local trackH = math.max(4, UI.Scale(8))
-        local y = h / 2 - trackH / 2
-        local r = math.floor(trackH / 2)
-        Draw.RoundedBox(r, 0, y, w, trackH, colors.Header)
-        Draw.RoundedBox(r, 0, y, w * s:GetSlideX(), trackH, colors.Accent)
+        local trackH = math.max(4, UI.Scale(10))
+        local y = math.floor(h / 2 - trackH / 2)
+        Draw.Box(0, y, w, trackH, Color(0, 0, 0, 200))
+        Draw.Box(0, y, w * s:GetSlideX(), trackH, colors.Accent)
+        Draw.Outline(0, y, w, trackH, Color(colors.Accent.r, colors.Accent.g, colors.Accent.b, 150))
     end
 
-    self.Slider.Knob:SetSize(UI.Scale(18), UI.Scale(18))
+    self.Slider.Knob:SetSize(UI.Scale(16), UI.Scale(20))
     self.Slider.Knob.Paint = function(s, w, h)
-        Draw.Circle(w / 2, h / 2, w / 2, colors.Accent)
-        Draw.Circle(w / 2, h / 2, w / 2 - UI.Scale(4), colors.Text)
+        DrawKnob(0, 0, w, h, colors.Accent, s:IsHovered() and 1 or 0)
     end
 end
 
@@ -320,8 +328,8 @@ function ENTRY:Paint(w, h)
     local t = UI.Animate(self, "_focus", focused and 1 or 0)
     local r = UI.Scale(4)
 
-    Draw.RoundedBox(r, 0, 0, w, h, colors.Header)
-    Draw.RoundedOutline(r, 0, 0, w, h, self:IsHovered() and colors.Border or colors.BorderNeutral)
+    Draw.RoundedBox(r, 0, 0, w, h, Color(colors.Header.r, colors.Header.g, colors.Header.b, 200))
+    Draw.Box(0, h - 2, w, 2, self:IsHovered() and colors.Border or Color(50, 50, 50, 200))
 
     -- Акцентная линия снизу, разъезжается из центра при фокусе
     if t > 0.01 then

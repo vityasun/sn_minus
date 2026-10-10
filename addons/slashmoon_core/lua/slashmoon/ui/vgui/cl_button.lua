@@ -28,8 +28,6 @@ local VARIANT_ACCENT = {
     warning = "Warning",
 }
 
-local FILLED = { primary = true, success = true, danger = true, warning = true }
-
 local PANEL = {}
 
 function PANEL:Init()
@@ -127,38 +125,38 @@ function PANEL:Paint(w, h)
     local outline = self._outline or Color(0, 0, 0)
     self._bg, self._fg, self._outline = bg, fg, outline
 
-    if not enabled then
-        bg.r, bg.g, bg.b, bg.a = colors.Surface.r, colors.Surface.g, colors.Surface.b, 160
-        fg.r, fg.g, fg.b, fg.a = colors.TextDisabled.r, colors.TextDisabled.g, colors.TextDisabled.b, 255
-        Draw.RoundedBox(r, 0, 0, w, h, bg)
-    elseif FILLED[self.Variant] then
-        local k = math.max(hov, act) * 0.25 - press * 0.2
-        bg.r = math.Clamp(accent.r + (k > 0 and (255 - accent.r) * k or accent.r * k), 0, 255)
-        bg.g = math.Clamp(accent.g + (k > 0 and (255 - accent.g) * k or accent.g * k), 0, 255)
-        bg.b = math.Clamp(accent.b + (k > 0 and (255 - accent.b) * k or accent.b * k), 0, 255)
-        bg.a = 255
-        fg.r, fg.g, fg.b, fg.a = colors.AccentText.r, colors.AccentText.g, colors.AccentText.b, 255
-        Draw.RoundedBox(r, 0, 0, w, h, bg)
-    elseif self.Variant == "ghost" then
-        local k = math.max(hov, act)
+    if self.Variant == "ghost" then
+        -- ghost: прозрачная, подсветка при наведении, полоса слева у активной (вкладки, меню)
+        local k = enabled and math.max(hov, act) or 0
         bg.r, bg.g, bg.b, bg.a = colors.SurfaceHover.r, colors.SurfaceHover.g, colors.SurfaceHover.b, 255 * k
         if bg.a > 1 then Draw.RoundedBox(r, 0, 0, w, h, bg) end
         if act > 0.01 then
-            Draw.RoundedBox(math.min(r, UI.Scale(2)), 0, h * 0.2, UI.Scale(3), h * 0.6, Color(accent.r, accent.g, accent.b, 255 * act))
+            Draw.Box(0, 0, UI.Scale(4), h, Color(accent.r, accent.g, accent.b, 255 * act))
         end
-        UI.LerpColor(math.max(hov, act), colors.TextMuted, colors.Text, fg)
+        if enabled then
+            UI.LerpColor(math.max(hov, act), colors.TextMuted, colors.Text, fg)
+        else
+            fg.r, fg.g, fg.b, fg.a = colors.TextDisabled.r, colors.TextDisabled.g, colors.TextDisabled.b, 255
+        end
     else
-        -- secondary: темная плашка, акцентная полоса слева, подсвечиваемая обводка
-        local k = math.max(hov, act)
+        -- Фирменная кнопка SlashMoon: темная плашка, полоса 4px слева,
+        -- обводка 1px разгорается при наведении. Цвет полосы задает вариант
+        -- (primary/secondary — акцент, success — зеленый, danger — красный).
+        if not enabled then accent = colors.TextDisabled end
+        local k = enabled and math.max(hov, act) or 0
         bg.r, bg.g, bg.b, bg.a = colors.Header.r, colors.Header.g, colors.Header.b, colors.Header.a
         Draw.RoundedBox(r, 0, 0, w, h, bg)
         if press > 0.01 then
             Draw.RoundedBox(r, 0, 0, w, h, Color(accent.r, accent.g, accent.b, 40 * press))
         end
         Draw.RoundedBox(r, 0, 0, UI.Scale(4), h, accent, true, false, true, false)
-        outline.r, outline.g, outline.b, outline.a = accent.r, accent.g, accent.b, 50 + 205 * k
+        outline.r, outline.g, outline.b, outline.a = accent.r, accent.g, accent.b, enabled and (50 + 205 * k) or 30
         Draw.RoundedOutline(r, 0, 0, w, h, outline)
-        UI.LerpColor(k, colors.TextMuted, colors.Text, fg)
+        if enabled then
+            UI.LerpColor(k, colors.TextMuted, colors.Text, fg)
+        else
+            fg.r, fg.g, fg.b, fg.a = colors.TextDisabled.r, colors.TextDisabled.g, colors.TextDisabled.b, 255
+        end
     end
 
     -- Иконка + текст
@@ -172,7 +170,7 @@ function PANEL:Paint(w, h)
 
     local x
     if self.TextAlign == TEXT_ALIGN_LEFT then
-        x = pad + (self.Variant == "secondary" and UI.Scale(4) or 0)
+        x = pad + (self.Variant ~= "ghost" and UI.Scale(4) or 0)
     elseif self.TextAlign == TEXT_ALIGN_RIGHT then
         x = w - pad - total
     else

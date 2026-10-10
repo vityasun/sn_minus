@@ -21,9 +21,10 @@ function Draw.Box(x, y, w, h, col)
 end
 
 --- Прямоугольник со скругленными углами (radius в реальных пикселях).
+-- В остром стиле (UI.Sharp) рисуется обычный прямоугольник.
 -- Можно отключить отдельные углы: tl, tr, bl, br = false.
 function Draw.RoundedBox(radius, x, y, w, h, col, tl, tr, bl, br)
-    if radius <= 0 then
+    if UI.Sharp or radius <= 0 then
         Draw.Box(x, y, w, h, col)
         return
     end
@@ -56,7 +57,7 @@ end
 
 --- Скругленная обводка толщиной 1px.
 function Draw.RoundedOutline(radius, x, y, w, h, col)
-    if radius <= 0 then
+    if UI.Sharp or radius <= 0 then
         Draw.Outline(x, y, w, h, col)
         return
     end

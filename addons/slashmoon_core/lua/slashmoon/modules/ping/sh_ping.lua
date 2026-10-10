@@ -163,8 +163,7 @@ if CLIENT then
                 surface.SetMaterial(matPing)
                 surface.DrawTexturedRect(scr.x - size / 2, scr.y - size, size, size)
             else
-                Draw.Circle(scr.x, scr.y - size / 2, size / 4, drawColor)
-                Draw.TextShadow("!", "SlashMoon.Title", scr.x, scr.y - size / 2, color_white, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+                Draw.TextShadow("!", "SlashMoon.Title", scr.x, scr.y - size / 2, drawColor, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
             end
 
             local distMeters = math.floor(dist * 0.01905)
