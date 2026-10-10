@@ -49,6 +49,7 @@ addons/slashmoon_core/
 │   └── includes/modules/                сторонние библиотеки (predicted.lua)
 ├── materials/ models/ sound/
 └── resource/ (fonts/, localization/)
+addons/slashmoon_lib/ библиотека отдельным аддоном (собирается из slashmoon_core)
 docs/LIBRARY.md      документация библиотеки для разработчиков
 tools/               линтер и сборка отдельной библиотеки
 licenses/            лицензии сторонних ресурсов
@@ -192,10 +193,15 @@ licenses/            лицензии сторонних ресурсов
 
 ## Библиотека для разработчиков
 
-SlashMoon Lib включена в аддон. Её можно собрать отдельным пакетом:
+SlashMoon Lib включена в аддон `slashmoon_core` и лежит отдельным аддоном в
+[`addons/slashmoon_lib`](addons/slashmoon_lib) — для тех, кому нужна только библиотека без модулей режима.
+
+Исходник один — внутри `slashmoon_core`. `addons/slashmoon_lib` руками не правится: после
+изменений библиотеки пересоберите её, линтер проверяет, что копия актуальна.
 
 ```sh
-python3 tools/build_lib.py      # -> dist/slashmoon_lib
+python3 tools/build_lib.py           # пересобрать addons/slashmoon_lib
+python3 tools/build_lib.py --check   # проверить, что копия актуальна
 ```
 
 Библиотека включает:
@@ -214,7 +220,7 @@ python3 tools/build_lib.py      # -> dist/slashmoon_lib
 ## Разработка
 
 ```sh
-tools/lint.sh    # проверка заголовков, синтаксиса и глобальных переменных (нужны lua5.1 и luacheck)
+tools/lint.sh    # заголовки, синтаксис, глобалы и актуальность addons/slashmoon_lib (нужны lua5.1 и luacheck)
 ```
 
 Соглашения:

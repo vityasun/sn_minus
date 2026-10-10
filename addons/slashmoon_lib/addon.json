@@ -1,0 +1,13 @@
+{
+    "title": "SlashMoon Lib",
+    "type": "tool",
+    "tags": [
+        "build",
+        "fun"
+    ],
+    "description": "Developer library for Garry's Mod: UI framework, SAM/ULX admin layer, module registry with toggles, JSON config and HTTP helpers.",
+    "ignore": [
+        "*.md",
+        "*.txt"
+    ]
+}

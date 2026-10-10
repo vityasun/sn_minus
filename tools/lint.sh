@@ -5,6 +5,7 @@
 #   - запись в глобальные переменные (загрязнение неймспейса)
 #   - обращения к неизвестным глобалам (опечатки)
 #   - копирайт в первой строке каждого файла
+#   - addons/slashmoon_lib совпадает с библиотекой внутри slashmoon_core
 # Требования: python3, luacheck (luarocks install luacheck)
 # Использование: tools/lint.sh [папка lua] (по умолчанию addons/slashmoon_core/lua)
 # ============================================================
@@ -41,6 +42,11 @@ if grep -E '\(W11[12]\)' "$TMP/out.txt" | grep -vE "variable '($ALLOWED_SETS)'";
 echo "== Неизвестные глобалы"
 UNKNOWN="$(grep -E '\(W113\)' "$TMP/out.txt" | sed -E "s/.*variable '(.*)'/\1/" | sort -u | grep -vxFf "$ROOT/tools/gmod_globals.txt" || true)"
 if [ -n "$UNKNOWN" ]; then echo "$UNKNOWN"; STATUS=1; fi
+
+echo "== Отдельная библиотека (addons/slashmoon_lib)"
+if [ -z "${1:-}" ]; then
+    python3 -I "$ROOT/tools/build_lib.py" --check || STATUS=1
+fi
 
 [ $STATUS -eq 0 ] && echo "OK"
 exit $STATUS
