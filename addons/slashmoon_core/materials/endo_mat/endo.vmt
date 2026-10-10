@@ -1,0 +1,5 @@
+"MonitorScreen"
+{
+	"$basetexture" "endo_mat/endo"
+	"$frame" "0"
+}

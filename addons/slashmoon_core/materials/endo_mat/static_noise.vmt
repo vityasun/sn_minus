@@ -1,0 +1,17 @@
+UnlitGeneric
+{
+	$basetexture "vondaram/static_noise"
+
+	$vertexalpha 1
+	$ignorez 1
+
+	Proxies
+	{
+		AnimatedTexture
+		{
+			animatedTextureVar "$basetexture"
+			animatedTextureFrameNumVar "$frame"
+			animatedTextureFrameRate 25
+		}
+	}
+}
