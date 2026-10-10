@@ -23,35 +23,160 @@ MODULE:Hook("RenderScene", "wOS_Dance_CameraPos", function(origin, angles, fov)
     SlashMoon.Dances.CameraPos = origin
 end)
 
-function SlashMoon.Dances.PlayMusic(ply, filepath)
-    SlashMoon.Dances.StopMusic(ply)
+-- ========================================================
+-- Музыка эмоции: интро (animData.music) и луп (animData.repeatMusic).
+-- Интро играет один раз, затем без паузы включается луп (он загружается
+-- заранее, пока играет интро). Если лупа нет или он совпадает с интро —
+-- один трек на повторе (для loop = false — один раз).
+-- Позиция трека считается от wOS_Dance_StartTime лидера, поэтому игрок,
+-- подошедший позже, слышит музыку с того же места, что и остальные.
+-- ========================================================
 
-    ply.wOS_MusicPlaybackID = (ply.wOS_MusicPlaybackID or 0) + 1
-    local currentPlayback = ply.wOS_MusicPlaybackID
+-- Состояние двухфазной музыки по игроку: { loop = канал, introDone = bool, loopOffset = сек }
+SlashMoon.Dances.MusicState = SlashMoon.Dances.MusicState or {}
+local MusicState = SlashMoon.Dances.MusicState
 
-    sound.PlayFile("sound/" .. filepath, "3d noplay", function(station, errCode, errStr)
-        if not IsValid(station) then return end
+local function IsCurrentPlayback(ply, playback)
+    return IsValid(ply) and ply.wOS_MusicPlaybackID == playback and ply.wOS_IsLeader
+        and ply:GetNW2String("wOS_Dance_ID", "") ~= ""
+end
 
-        if not IsValid(ply) or ply.wOS_MusicPlaybackID ~= currentPlayback or not ply.wOS_IsLeader or ply:GetNW2String("wOS_Dance_ID", "") == "" then
+-- Загружает трек в 3D-канал без воспроизведения. callback(station) — только для актуального запуска,
+-- onFail() — если файл не загрузился.
+local function LoadTrack(ply, playback, path, callback, onFail)
+    sound.PlayFile("sound/" .. path, "3d noplay", function(station)
+        if not IsValid(station) then
+            if onFail and IsCurrentPlayback(ply, playback) then onFail() end
+            return
+        end
+        if not IsCurrentPlayback(ply, playback) then
             station:Stop()
             return
         end
-
         station:SetPos(ply:GetPos() + MUSIC_POS_OFFSET)
         station:Set3DFadeDistance(150, 600)
-        station:SetVolume(1)
-        station:EnableLooping(true)
-        station:Play()
-        ply.wOS_LastMusicVol = 1
+        station:SetVolume(ply.wOS_LastMusicVol or 1)
+        callback(station)
+    end)
+end
 
-        SlashMoon.Dances.MusicChannels[ply] = station
+-- Сколько секунд прошло с начала танца лидера
+local function DanceElapsed(ply)
+    local started = ply:GetNW2Float("wOS_Dance_StartTime", 0)
+    if started <= 0 then return 0 end
+    return math.max(0, CurTime() - started)
+end
+
+-- Запускает канал с позиции offset (сек). false — одноразовый трек уже закончился.
+local function StartAt(station, offset, looping)
+    local len = station:GetLength()
+    if offset > 0 and len > 0 then
+        if looping then
+            offset = offset % len
+        elseif offset >= len then
+            station:Stop()
+            return false
+        end
+        station:SetTime(offset)
+    end
+    station:EnableLooping(looping)
+    station:Play()
+    return true
+end
+
+--- Переключает музыку лидера с интро на луп (offset — позиция в лупе, сек).
+function SlashMoon.Dances.SwitchToLoop(ply, offset)
+    local channels = SlashMoon.Dances.MusicChannels
+    local state = MusicState[ply]
+    if not state then return end
+
+    local intro = channels[ply]
+    if IsValid(intro) then intro:Stop() end
+    channels[ply] = nil
+    state.introDone = true
+
+    if IsValid(state.loop) then
+        local loopStation = state.loop
+        MusicState[ply] = nil
+        StartAt(loopStation, offset or 0, true)
+        channels[ply] = loopStation
+    else
+        -- Луп еще грузится: стартует в своем колбэке с этого места
+        state.loopOffset = offset or 0
+        state.loopStartedAt = CurTime()
+    end
+end
+
+function SlashMoon.Dances.PlayMusic(ply, animData)
+    SlashMoon.Dances.StopMusic(ply)
+    if not istable(animData) or not animData.music then return end
+
+    ply.wOS_MusicPlaybackID = (ply.wOS_MusicPlaybackID or 0) + 1
+    local playback = ply.wOS_MusicPlaybackID
+    local intro = animData.music
+    local loopTrack = animData.repeatMusic
+    local channels = SlashMoon.Dances.MusicChannels
+
+    -- Один трек: повтор, для одноразовых эмоций (loop = false) — один раз
+    if not loopTrack or loopTrack == intro then
+        local looping = animData.loop ~= false
+        LoadTrack(ply, playback, intro, function(station)
+            if StartAt(station, DanceElapsed(ply), looping) then
+                channels[ply] = station
+            end
+        end)
+        return
+    end
+
+    -- Интро + луп: грузим оба, луп ждет окончания интро
+    local state = { introDone = false }
+    MusicState[ply] = state
+
+    LoadTrack(ply, playback, loopTrack, function(loopStation)
+        if MusicState[ply] ~= state then loopStation:Stop() return end
+        loopStation:EnableLooping(true)
+        state.loop = loopStation
+
+        if state.introDone then
+            -- Интро закончилось раньше, чем загрузился луп
+            local offset = (state.loopOffset or 0) + (CurTime() - (state.loopStartedAt or CurTime()))
+            MusicState[ply] = nil
+            StartAt(loopStation, offset, true)
+            channels[ply] = loopStation
+        end
+    end)
+
+    LoadTrack(ply, playback, intro, function(introStation)
+        if MusicState[ply] ~= state then introStation:Stop() return end
+        local elapsed = DanceElapsed(ply)
+        local introLen = introStation:GetLength()
+
+        if introLen > 0 and elapsed >= introLen then
+            -- Подошли позже, интро уже отыграло: сразу луп с нужного места
+            introStation:Stop()
+            SlashMoon.Dances.SwitchToLoop(ply, elapsed - introLen)
+            return
+        end
+
+        StartAt(introStation, elapsed, false)
+        channels[ply] = introStation
+    end, function()
+        -- Интро не загрузилось: играем луп
+        if MusicState[ply] == state then
+            SlashMoon.Dances.SwitchToLoop(ply, DanceElapsed(ply))
+        end
     end)
 end
 
 function SlashMoon.Dances.StopMusic(ply)
-    local station = SlashMoon.Dances.MusicChannels[ply]
+    local channels = SlashMoon.Dances.MusicChannels
+    local station = channels[ply]
     if IsValid(station) then station:Stop() end
-    SlashMoon.Dances.MusicChannels[ply] = nil
+    channels[ply] = nil
+
+    local state = MusicState[ply]
+    if state and IsValid(state.loop) then state.loop:Stop() end
+    MusicState[ply] = nil
 end
 
 -- === ОПТИМИЗАЦИЯ #3 ===
@@ -171,7 +296,7 @@ MODULE:Hook("Think", "wOS_Dance_Music_Think", function()
                     if not ply.wOS_IsLeader then
                         ply.wOS_IsLeader = true
                         if animData.music then
-                            SlashMoon.Dances.PlayMusic(ply, animData.music)
+                            SlashMoon.Dances.PlayMusic(ply, animData)
                         end
                     end
                 else
@@ -197,6 +322,9 @@ MODULE:Hook("Think", "wOS_Dance_Music_Think", function()
             SlashMoon.Dances.MusicChannels[ply] = nil
         elseif not IsValid(ply) or not ply:Alive() or ply.wOS_LocalDance_ID == "" or not ply.wOS_IsLeader then
             SlashMoon.Dances.StopMusic(ply)
+        elseif MusicState[ply] and not MusicState[ply].introDone and station:GetState() == GMOD_CHANNEL_STOPPED then
+            -- Интро доиграло: включаем луп (если еще грузится — стартует сам)
+            SlashMoon.Dances.SwitchToLoop(ply, 0)
         else
             local sourcePos = ply:GetPos() + MUSIC_POS_OFFSET
             station:SetPos(sourcePos)

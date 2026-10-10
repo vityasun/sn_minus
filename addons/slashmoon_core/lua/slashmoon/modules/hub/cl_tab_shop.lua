@@ -21,16 +21,30 @@ end
 Hub.RegisterTab("shop", "МАГАЗИН", "sn_hub/bg_shop.png", 2, function(pnl)
     local selected = nil -- { id, name, price, kind, data }
     local danceSound = nil
+    local loopPath = nil -- луп эмоции, включается после интро
 
     local function StopMusic()
         if danceSound then danceSound:Stop() danceSound = nil end
+        loopPath = nil
     end
     pnl.OnRemove = StopMusic
 
-    -- Музыка превью играет, пока вкладка открыта
+    local function PreviewVolume()
+        local vol = GetConVar("wos_dance_music_vol")
+        return vol and vol:GetFloat() or 1
+    end
+
+    -- Музыка превью играет, пока вкладка открыта: интро, затем луп по кругу
     hook.Add("Think", pnl, function()
         if not pnl:IsVisible() then StopMusic() return end
-        if danceSound and not danceSound:IsPlaying() then danceSound:Play() end
+        if danceSound and not danceSound:IsPlaying() then
+            if loopPath then
+                danceSound:Stop()
+                danceSound = CreateSound(LocalPlayer(), loopPath)
+                loopPath = nil
+            end
+            danceSound:PlayEx(PreviewVolume(), 100)
+        end
     end)
 
     -- ══════════ Справа: предпросмотр ══════════
@@ -189,8 +203,10 @@ Hub.RegisterTab("shop", "МАГАЗИН", "sn_hub/bg_shop.png", 2, function(pnl)
         local sndPath = animData.sound or animData.Sound or animData.music
         if sndPath then
             danceSound = CreateSound(LocalPlayer(), sndPath)
-            local vol = GetConVar("wos_dance_music_vol")
-            danceSound:PlayEx(vol and vol:GetFloat() or 1, 100)
+            danceSound:PlayEx(PreviewVolume(), 100)
+            if animData.repeatMusic and animData.repeatMusic ~= sndPath then
+                loopPath = animData.repeatMusic
+            end
         end
     end
 
