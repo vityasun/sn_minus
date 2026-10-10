@@ -15,8 +15,20 @@ EscMenu.Bypass = false
 
 local bgMaterial = Material("sn_escmenu/background.png", "noclamp smooth")
 
+local BuildMenu
+
 function EscMenu.Open()
     if IsValid(EscMenu.Panel) then return end
+
+    local ok = SlashMoon.SafeCall(BuildMenu)
+    if not ok and IsValid(EscMenu.Panel) then
+        EscMenu.Panel:Remove()
+        EscMenu.Panel = nil
+    end
+    return ok
+end
+
+function BuildMenu()
 
     local panelWidth = UI.Scale(560)
 
@@ -119,9 +131,10 @@ MODULE:Hook("OnPauseMenuShow", "SN_EscMenu_Toggle", function()
 
     if IsValid(EscMenu.Panel) then
         EscMenu.Close()
-    else
-        EscMenu.Open()
+        return false
     end
+    -- Меню не открылось (ошибка уже в консоли) — пускаем стандартное меню паузы
+    if not EscMenu.Open() then return end
     return false
 end)
 

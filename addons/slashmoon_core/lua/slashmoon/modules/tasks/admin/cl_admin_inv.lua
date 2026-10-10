@@ -160,6 +160,8 @@ BuildAdminPanel = function()
     adminRoot:SetSize(sw, sh)
     adminRoot:MakePopup()
     adminRoot:SetKeyboardInputEnabled(false)
+    -- ESC закрывает панель, а не открывает меню паузы
+    SlashMoon.UI.PushEscape(adminRoot, function(panel) panel:Remove() end)
     adminRoot.Paint = function(self, w, h)
         surface.SetDrawColor(0, 0, 0, 150)
         surface.DrawRect(0, 0, w, h)

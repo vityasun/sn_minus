@@ -50,6 +50,9 @@ UI.EscapeStack = UI.EscapeStack or {}
 
 --- Регистрирует панель, которая закрывается по ESC (последняя добавленная — первая).
 function UI.PushEscape(panel, fn)
+    for i = #UI.EscapeStack, 1, -1 do
+        if UI.EscapeStack[i].panel == panel then table.remove(UI.EscapeStack, i) end
+    end
     UI.EscapeStack[#UI.EscapeStack + 1] = { panel = panel, fn = fn }
 end
 
@@ -61,8 +64,9 @@ function UI.HandleEscape()
             table.remove(UI.EscapeStack, i)
         elseif entry.panel.GetCloseOnEscape and not entry.panel:GetCloseOnEscape() then
             continue -- окно само управляет закрытием по ESC
-        elseif entry.panel:IsVisible() then
-            table.remove(UI.EscapeStack, i)
+        elseif entry.panel:IsVisible() and not entry.panel.Closing then
+            -- Запись не удаляется: окно с SetDeleteOnClose(false) можно показать снова,
+            -- удаленные панели вычищаются при следующем проходе
             entry.fn(entry.panel)
             return true
         end

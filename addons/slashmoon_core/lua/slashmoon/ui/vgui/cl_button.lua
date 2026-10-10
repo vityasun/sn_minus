@@ -16,7 +16,8 @@
 local UI = SlashMoon.UI
 local Draw = UI.Draw
 local colors = UI.Colors
-local BaseClass = baseclass.Get("DButton")
+-- SetText нативный (метатаблица Panel): в таблице baseclass DButton его нет
+local PanelMeta = FindMetaTable("Panel")
 
 local VARIANT_ACCENT = {
     primary = "Accent",
@@ -32,7 +33,7 @@ local FILLED = { primary = true, success = true, danger = true, warning = true }
 local PANEL = {}
 
 function PANEL:Init()
-    BaseClass.SetText(self, "")
+    PanelMeta.SetText(self, "")
     self.BtnText = ""
     self:SetFont("SlashMoon.Button")
     self.Variant = "secondary"
@@ -52,7 +53,7 @@ end
 --- Текст кнопки.
 function PANEL:SetText(text)
     self.BtnText = tostring(text or "")
-    BaseClass.SetText(self, "")
+    PanelMeta.SetText(self, "")
 end
 PANEL.SetBtnText = PANEL.SetText
 
@@ -197,7 +198,7 @@ vgui.Register("SlashMoon.Button", PANEL, "DButton")
 local ICON = {}
 
 function ICON:Init()
-    BaseClass.SetText(self, "")
+    PanelMeta.SetText(self, "")
     self.Icon = nil
     self.Glyph = nil
     self.IconColor = nil

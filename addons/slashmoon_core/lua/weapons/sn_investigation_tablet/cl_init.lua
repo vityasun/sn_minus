@@ -56,6 +56,8 @@ local function OpenReportPanel(wep)
     reportPanel:SetSize(ScrW(), ScrH())
     reportPanel:MakePopup()
     reportPanel:SetKeyboardInputEnabled(false)
+    -- ESC закрывает отчет, а не открывает меню паузы
+    SlashMoon.UI.PushEscape(reportPanel, function() CloseReportPanel(true) end)
     gui.EnableScreenClicker(true)
     reportPanel.Paint = function(self, w, h)
         surface.SetDrawColor(0, 0, 0, 135)

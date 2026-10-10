@@ -187,6 +187,8 @@ MODULE:Receive("SN_Workbench_Open", function()
     wbRoot:SetSize(ScrW(), ScrH())
     wbRoot:MakePopup()
     wbRoot:SetKeyboardInputEnabled(false)
+    -- ESC закрывает верстак, а не открывает меню паузы
+    SlashMoon.UI.PushEscape(wbRoot, CloseWorkbenchUI)
     wbRoot.Paint = function(self, w, h)
         surface.SetDrawColor(0, 0, 0, 120)
         surface.DrawRect(0, 0, w, h)

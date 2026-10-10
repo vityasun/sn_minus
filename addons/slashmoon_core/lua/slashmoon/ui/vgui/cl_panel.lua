@@ -103,6 +103,7 @@ vgui.Register("SlashMoon.Container", CONTAINER, "DPanel")
 -- SlashMoon.Label
 -- ========================================================
 local LABEL = {}
+local LabelBase = baseclass.Get("DLabel")
 
 function LABEL:Init()
     self:SetFont("SlashMoon.Text")
@@ -129,6 +130,8 @@ function LABEL:SetColor(col)
 end
 
 function LABEL:Think()
+    -- DLabel:Think отвечает за SetAutoStretchVertical
+    if LabelBase.Think then LabelBase.Think(self) end
     if self.ColorKey and self.ThemeVersion ~= UI.ThemeVersion then
         self:SetColorKey(self.ColorKey)
     end
