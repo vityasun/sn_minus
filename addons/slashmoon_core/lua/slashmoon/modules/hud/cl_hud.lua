@@ -55,7 +55,6 @@ SlashMoon.FH = SlashMoon.FH or {
     SpecActive = false,
     Companion = nil
 }
-SlashMoon.FH._fhHUDLoaded = true  -- Флаг: HUD загружен (для фазового таймера модуля tasks)
 
 -- ========================================================
 -- 1. ПОДАВЛЕНИЕ СТАРОГО ИНТЕРФЕЙСА (с возможностью вернуть его)
@@ -176,9 +175,9 @@ MODULE:Hook("HUDPaint", "SN_MasterHUD_Render", function()
 
     -- ── А) ГЛАВНЫЙ ТАЙМЕР РАУНДА ──
     -- Отображается когда SlashMoon.FH.Timer.active = true
-    -- НО НЕ когда фазовая система тасков активна (SlashMoon.Phase.IsActive)
-    -- — в этом случае модуль tasks рисует свой таймер с инфой о фазе
-    local phaseActive = SlashMoon.Phase and SlashMoon.Phase.IsActive and SlashMoon.Phase.IsActive()
+    -- НО НЕ когда фазовая система заданий активна — тогда модуль tasks
+    -- сам обновляет SlashMoon.FH.Timer данными о фазе
+    local phaseActive = SlashMoon.Tasks and SlashMoon.Tasks.IsPhaseActive and SlashMoon.Tasks.IsPhaseActive()
     if SlashMoon.FH.Timer.active and not phaseActive then
         local pnlW, pnlH = 350, 110
         local x = sw / 2 - pnlW / 2

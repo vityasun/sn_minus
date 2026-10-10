@@ -45,6 +45,17 @@ function UI.CreateFont(name, size, weight, opts)
     return full
 end
 
+--- Регистрирует шрифт с фиксированными параметрами surface.CreateFont (без масштабирования).
+-- Нужен для 3D2D-экранов и рендер-таргетов, где размер не зависит от разрешения.
+-- @param name string полное имя шрифта
+-- @param data table таблица параметров surface.CreateFont
+function UI.RegisterRawFont(name, data)
+    data = table.Copy(data or {})
+    data.extended = data.extended ~= false
+    surface.CreateFont(name, data)
+    return name
+end
+
 --- Пересоздает все шрифты (например, после смены разрешения или семейства).
 function UI.RebuildFonts()
     for name, data in pairs(UI.Fonts) do

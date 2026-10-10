@@ -12,6 +12,7 @@
 --       category = "Геймплей",
 --       default = true,                        -- включен по умолчанию
 --       files = { "sh_example.lua" },          -- порядок загрузки (необязательно)
+--       defer = true,                          -- грузить файлы после гейммода (timer.Simple(0))
 --       entities = { "my_ent" },               -- энтити модуля (необязательно)
 --       weapons = { "my_swep" },               -- оружие модуля (необязательно)
 --       options = {                            -- настройки в админ-панели (необязательно)
@@ -333,6 +334,7 @@ function Modules.Register(def)
     mod.default = def.default ~= false
     mod.order = tonumber(def.order) or 100
     mod.files = def.files
+    mod.defer = def.defer == true
     mod.path = def.path or Modules.LoadingPath
     mod.entities = def.entities or {}
     mod.weapons = def.weapons or {}
@@ -411,14 +413,29 @@ function Modules.LoadAll()
         end
     end
 
+    local deferred = {}
     for _, mod in ipairs(Modules.GetSorted()) do
         if mod.path and not mod.loaded then
             mod.loaded = true
-            Modules.LoadFiles(mod)
+            if mod.defer then
+                deferred[#deferred + 1] = mod
+            else
+                Modules.LoadFiles(mod)
+            end
         end
     end
 
     hook.Run("SlashMoon.ModulesLoaded")
+
+    -- Модули, зависящие от глобалов гейммода, грузятся после него
+    if #deferred > 0 then
+        timer.Simple(0, function()
+            for _, mod in ipairs(deferred) do
+                SlashMoon.SafeCall(Modules.LoadFiles, mod)
+                hook.Run("SlashMoon.ModuleLoaded", mod.id, mod)
+            end
+        end)
+    end
 end
 
 -- ========================================================

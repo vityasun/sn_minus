@@ -637,7 +637,8 @@ local switchOverlayEnd   = 0.25
 local switchOverlayFade  = 0.12
 local switchOverlayStart = 0
 
-surface.CreateFont("EndoTerminalFont", {
+-- Шрифт экрана (фиксированный размер рендер-таргета, без масштабирования)
+SlashMoon.UI.RegisterRawFont("SlashMoon.EndoTerminal", {
     font      = "Courier New",
     size      = 24,
     weight    = 650,
@@ -724,18 +725,18 @@ local function DrawTerminalText(elapsed, jitterX, jitterY, rgbSplit, overlayAlph
         -- RGB-шифт (хроматическая аберрация) во время глитч-импульса —
         -- две смещённые копии текста в красном/голубом под основной.
         if rgbSplit then
-            draw.SimpleText(txt, "EndoTerminalFont", x - 2, y, Color(255, 0, 0, 140 * a), TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
-            draw.SimpleText(txt, "EndoTerminalFont", x + 2, y, Color(0, 255, 255, 140 * a), TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
+            draw.SimpleText(txt, "SlashMoon.EndoTerminal", x - 2, y, Color(255, 0, 0, 140 * a), TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
+            draw.SimpleText(txt, "SlashMoon.EndoTerminal", x + 2, y, Color(0, 255, 255, 140 * a), TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
         end
 
-        draw.SimpleText(txt, "EndoTerminalFont", x, y,
+        draw.SimpleText(txt, "SlashMoon.EndoTerminal", x, y,
             Color(color.r, color.g, color.b, 255 * a), TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
     end
 
     -- Мигающий курсор после последней строки
     if visibleLines == #BOOT_LINES and math.floor(elapsed * 2) % 2 == 0 then
         local y = TEXT_MARGIN_Y + visibleLines * LINE_HEIGHT
-        draw.SimpleText("_", "EndoTerminalFont", TEXT_MARGIN_X + jitterX, y + jitterY,
+        draw.SimpleText("_", "SlashMoon.EndoTerminal", TEXT_MARGIN_X + jitterX, y + jitterY,
             Color(200, 255, 200, 255 * a), TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
     end
 end
