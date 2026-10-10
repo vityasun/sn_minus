@@ -1,5 +1,4 @@
 -- Written for: SlashMoon. By: VIKA & Ronni
-local MODULE = SlashMoon.Modules.Get("endo_copies")
 
 -- -- sv_endo_copy_push.lua
 -- if CLIENT then return end

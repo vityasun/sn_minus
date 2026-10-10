@@ -1,5 +1,4 @@
 -- Written for: SlashMoon. By: VIKA & Ronni
-local MODULE = SlashMoon.Modules.Get("sfreddy")
 
 -- ========================================================
 -- Реворк Shadow Freddy (ЭКСПЕРИМЕНТАЛЬНО)

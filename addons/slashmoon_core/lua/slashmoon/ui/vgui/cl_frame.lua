@@ -143,13 +143,23 @@ function PANEL:Close()
 
     if not self.m_bAnimated then
         BaseClass.Close(self)
+        self.Closing = false
         return
     end
 
     self:SetMouseInputEnabled(false)
     self:SetKeyboardInputEnabled(false)
     self:AlphaTo(0, 0.15, 0, function()
-        if IsValid(self) then BaseClass.Close(self) end
+        if not IsValid(self) then return end
+        BaseClass.Close(self)
+
+        -- Окно с SetDeleteOnClose(false) только скрывается: готовим его к повторному показу
+        if IsValid(self) then
+            self.Closing = false
+            self:SetAlpha(255)
+            self:SetMouseInputEnabled(true)
+            self:SetKeyboardInputEnabled(true)
+        end
     end)
 end
 
