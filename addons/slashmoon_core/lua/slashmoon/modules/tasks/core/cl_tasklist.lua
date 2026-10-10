@@ -206,7 +206,7 @@ MODULE:Hook("HUDPaint", "SN_Tasks_DrawHUDList", function()
 
     local pnlH = headH + pad + (#sorted * rowH) + pad
 
-    -- 1. Матовый фон и обводка в стиле SN_Lib
+    -- 1. Матовый фон и обводка в стиле SlashMoon
     surface.SetDrawColor(SlashMoon.UI.Colors.DarkBG)
     surface.DrawRect(x, y, pnlW, pnlH)
 

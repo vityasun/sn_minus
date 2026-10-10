@@ -102,17 +102,17 @@ local function UpdateFHTimer()
 end
 
 -- ========================================================
--- ФАЗОВЫЙ ТАЙМЕР РАУНДА (в стиле SN_Lib MasterHUD)
+-- ФАЗОВЫЙ ТАЙМЕР РАУНДА (в стиле HUD-модуля SlashMoon)
 -- Рисуется когда FHI_IsPhaseActive() = true.
 -- Дизайн: текстурный фон, глой, FormatTime,
 -- фазовые цвета, прогресс-бар, доп. инфа о фазе.
 -- ========================================================
 
--- Текстуры (те же что использует SN_Lib MasterHUD)
+-- Текстуры (те же что использует HUD-модуля SlashMoon)
 local matTimerBg   = Material("vgui/sn/hud/timer/timer.png", "noclamp smooth")
 local matTimerGlow = Material("vgui/sn/hud/timer/glow.png", "noclamp smooth")
 
--- Форматирование времени ММ:СС (как в SN_Lib)
+-- Форматирование времени ММ:СС (как в библиотеке SlashMoon)
 local function FormatTime(seconds)
     local m = math.floor(seconds / 60)
     local s = math.floor(seconds % 60)
@@ -126,7 +126,7 @@ MODULE:Hook("HUDPaint", "SN_Phase_Timer", function()
 
     local sw, sh = ScrW(), ScrH()
 
-    -- === Параметры панели (как в SN_Lib MasterHUD) ===
+    -- === Параметры панели (как в HUD-модуля SlashMoon) ===
     local pnlW, pnlH = 350, 110
     local x = sw / 2 - pnlW / 2
     local y = 15

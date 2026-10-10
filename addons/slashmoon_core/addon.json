@@ -1,0 +1,13 @@
+{
+	"title": "SlashMoon Core",
+	"type": "servercontent",
+	"tags": ["fun", "realism"],
+	"description": "Open-source gameplay addon for Fazbear's Hunt with the SlashMoon library (UI framework, admin layer, modules panel).",
+	"ignore": [
+		"*.md",
+		"*.txt",
+		"*.py",
+		"*.sh",
+		".git*"
+	]
+}

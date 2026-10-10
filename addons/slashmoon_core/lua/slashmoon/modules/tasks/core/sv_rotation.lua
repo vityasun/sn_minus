@@ -22,7 +22,7 @@ local function GetAliveSurvivorsCount()
 end
 
 -- ── Установка длительностей фаз ────────────────────────────────────────
--- Прямая запись в SlashMoon.Phase.Config (вместо несуществующего SN_Lib.Phase.SetDurations)
+-- Прямая запись в SlashMoon.Phase.Config (вместо несуществующего Phase.SetDurations)
 local function SetPhaseDurations(taskDur, escapeDur)
     if SlashMoon.Phase and SlashMoon.Phase.Config then
         SlashMoon.Phase.Config.TASK_DURATION   = taskDur

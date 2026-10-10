@@ -31,7 +31,7 @@ CreateClientConVar("sn_crosshair_shadow", "1", true, false)
 CreateClientConVar("sn_crosshair_spread", "1", true, false)
 
 -- Отключение звуков интерфейса библиотеки
-hook.Add("SlashMoon.UI.ShouldPlaySound", "SlashMoon.EscMenu.UISounds", function()
+MODULE:Hook("SlashMoon.UI.ShouldPlaySound", "SlashMoon.EscMenu.UISounds", function()
     local cv = GetConVar("sn_ui_sounds_on")
     if cv and not cv:GetBool() then return false end
 end)
