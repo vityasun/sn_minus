@@ -16,6 +16,8 @@ UI.Sounds = UI.Sounds or {
 
 --- Проигрывает звук интерфейса по имени из UI.Sounds.
 function UI.PlaySound(kind)
+    -- Модули могут отключить звуки интерфейса (например, пользовательской настройкой)
+    if hook.Run("SlashMoon.UI.ShouldPlaySound", kind) == false then return end
     local snd = UI.Sounds[kind]
     if snd and snd ~= "" then surface.PlaySound(snd) end
 end
@@ -57,6 +59,8 @@ function UI.HandleEscape()
         local entry = UI.EscapeStack[i]
         if not IsValid(entry.panel) then
             table.remove(UI.EscapeStack, i)
+        elseif entry.panel.GetCloseOnEscape and not entry.panel:GetCloseOnEscape() then
+            continue -- окно само управляет закрытием по ESC
         elseif entry.panel:IsVisible() then
             table.remove(UI.EscapeStack, i)
             entry.fn(entry.panel)
