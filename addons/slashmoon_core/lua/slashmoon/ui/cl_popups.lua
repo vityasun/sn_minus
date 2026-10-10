@@ -118,17 +118,93 @@ function UI.DoubleInputPopup(title, message, placeholder1, placeholder2, confirm
     return popup, input1, input2
 end
 
---- Меню действий (список кнопок по центру экрана, клик мимо — закрыть).
--- buttons: { { text = "...", color = Color|nil, onClick = function() end }, ... }
-function UI.ActionMenu(title, buttons)
-    if IsValid(UI.ActiveActionMenu) then UI.ActiveActionMenu:Remove() end
-
+--- Невидимый полноэкранный "щит": перехватывает клики мимо всплывающего меню.
+-- @param onClick function вызывается при клике мимо
+-- @return Panel
+function UI.Shield(onClick)
     local shield = vgui.Create("DButton")
     shield:SetSize(ScrW(), ScrH())
     shield:SetText("")
     shield:SetCursor("arrow")
     shield.Paint = function() end
+    shield.DoClick = function(s)
+        if onClick then onClick(s) else s:Remove() end
+    end
     shield:MakePopup()
+    shield:SetKeyboardInputEnabled(false)
+    return shield
+end
+
+--- Всплывающее контекстное меню у курсора.
+--   local menu = SlashMoon.UI.ContextMenu()
+--   menu:AddOption("Текст", "icon16/user.png", function() end)
+--   menu:AddSpacer("ЗАГОЛОВОК")
+--   menu:AddPanel(panel, height)
+--   menu:Open()
+function UI.ContextMenu(width)
+    if IsValid(UI.ActiveContextMenu) then UI.ActiveContextMenu:Remove() end
+
+    local shield = UI.Shield()
+    UI.ActiveContextMenu = shield
+
+    local menu = vgui.Create("SlashMoon.Panel", shield)
+    menu:SetBackground("Header")
+    menu:SetOutline("Accent")
+    menu:SetWide(width or UI.Scale(300))
+    menu:DockPadding(1, 1, 1, 1)
+    menu.Shield = shield
+
+    function menu:AddOption(text, icon, onClick)
+        local btn = vgui.Create("SlashMoon.Button", self)
+        btn:Dock(TOP)
+        btn:SetTall(UI.Scale(44))
+        btn:SetVariant("ghost")
+        btn:SetRadius(0)
+        btn:SetTextAlign(TEXT_ALIGN_LEFT)
+        btn:SetFont("SlashMoon.Small")
+        btn:SetText(text)
+        if icon then btn:SetIcon(icon) end
+        btn.DoClick = function()
+            if IsValid(shield) then shield:Remove() end
+            if onClick then onClick() end
+        end
+        return btn
+    end
+
+    function menu:AddSpacer(title)
+        local header = vgui.Create("SlashMoon.Header", self)
+        header:Dock(TOP)
+        header:SetText(title or "")
+        return header
+    end
+
+    function menu:AddPanel(panel, height)
+        panel:SetParent(self)
+        panel:Dock(TOP)
+        if height then panel:SetTall(height) end
+        return panel
+    end
+
+    function menu:Open()
+        self:InvalidateLayout(true)
+        self:SizeToChildren(false, true)
+        local h = self:GetTall() + 2
+        self:SetTall(h)
+        local mx, my = gui.MousePos()
+        mx = math.min(mx, ScrW() - self:GetWide())
+        my = math.min(my, ScrH() - h)
+        self:SetPos(mx, my)
+    end
+
+    return menu
+end
+
+--- Меню действий (список кнопок по центру экрана, клик мимо — закрыть).
+-- buttons: { { text = "...", color = Color|nil, onClick = function() end }, ... }
+function UI.ActionMenu(title, buttons)
+    if IsValid(UI.ActiveActionMenu) then UI.ActiveActionMenu:Remove() end
+
+    local shield = UI.Shield()
     UI.ActiveActionMenu = shield
 
     local btnH, margin = UI.Scale(44), UI.Scale(10)

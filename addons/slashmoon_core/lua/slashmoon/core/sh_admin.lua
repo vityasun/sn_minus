@@ -162,6 +162,52 @@ function Admin.GetPlayersWithPermission(name)
     return out
 end
 
+-- ========================================================
+-- Админ-команды (клиент): единый вызов для SAM и ULX
+--   SlashMoon.Admin.RunCommand("kick", ply, "причина")
+-- Поддерживаемые действия: pm, goto, bring, return, kick, ban
+-- ========================================================
+Admin.CommandMap = {
+    sam = { prefix = "sam", pm = "pm", ["goto"] = "goto", bring = "bring", ["return"] = "return", kick = "kick", ban = "ban" },
+    ulx = { prefix = "ulx", pm = "psay", ["goto"] = "goto", bring = "bring", ["return"] = "return", kick = "kick", ban = "ban" },
+}
+
+--- Можно ли выполнить админ-действие (установлена ли подходящая админ-система).
+function Admin.CanRunCommand(action)
+    local map = Admin.CommandMap[Admin.GetSystem()]
+    return map ~= nil and map[action] ~= nil
+end
+
+if CLIENT then
+    --- Выполняет админ-команду через активную админ-систему.
+    -- @param action string pm | goto | bring | return | kick | ban
+    -- @param target Player
+    -- @return boolean выполнена ли команда
+    function Admin.RunCommand(action, target, ...)
+        local system = Admin.GetSystem()
+        local map = Admin.CommandMap[system]
+        if not map or not map[action] then
+            chat.AddText(Color(255, 80, 80), "[SlashMoon] ", color_white,
+                "Для этого действия нужна админ-система (SAM или ULX).")
+            return false
+        end
+
+        local targetArg = target
+        if IsValid(target) and target:IsPlayer() then
+            if target:IsBot() then
+                targetArg = target:Nick()
+            elseif system == "ulx" then
+                targetArg = "$" .. target:SteamID()
+            else
+                targetArg = target:SteamID()
+            end
+        end
+
+        RunConsoleCommand(map.prefix, map[action], tostring(targetArg), ...)
+        return true
+    end
+end
+
 -- Базовые права ядра
 Admin.RegisterPermission("slashmoon_menu", "superadmin", "Открытие панели конфигурации SlashMoon")
 Admin.RegisterPermission("slashmoon_config", "superadmin", "Изменение настроек и модулей SlashMoon")

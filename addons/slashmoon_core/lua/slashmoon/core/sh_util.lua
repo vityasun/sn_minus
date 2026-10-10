@@ -71,6 +71,18 @@ if SERVER then
         end
     end
 else
+    --- Проигрывает звук, только если файл существует (контент может быть не установлен).
+    -- @param path string путь относительно sound/
+    -- @param fallback string|nil звук, который проиграется, если основного нет
+    function SlashMoon.PlaySound(path, fallback)
+        if isstring(path) and path ~= "" and file.Exists("sound/" .. path, "GAME") then
+            surface.PlaySound(path)
+            return true
+        end
+        if isstring(fallback) and fallback ~= "" then surface.PlaySound(fallback) end
+        return false
+    end
+
     function SlashMoon.Notify(...)
         chat.AddText(SlashMoon.LogColor, "[SlashMoon] ", color_white, ...)
     end

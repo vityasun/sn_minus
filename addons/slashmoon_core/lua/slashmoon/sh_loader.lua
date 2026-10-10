@@ -88,7 +88,11 @@ SlashMoon.IncludeFile(root .. "admin/sv_admin_menu.lua")
 SlashMoon.IncludeFile(root .. "admin/cl_admin_menu.lua")
 SlashMoon.IncludeFile(root .. "admin/sh_commands.lua")
 
--- 4. Модули
+-- 4. Расширения: общие файлы аддонов-потребителей (lua/slashmoon/extensions/),
+-- загружаются после библиотеки и до модулей (шрифты, общие хелперы и т.п.)
+SlashMoon.IncludeFolder(root .. "extensions", true)
+
+-- 5. Модули
 SlashMoon.Modules.LoadAll()
 
 hook.Run("SlashMoon.Loaded")
