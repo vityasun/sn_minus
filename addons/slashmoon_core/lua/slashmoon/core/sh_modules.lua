@@ -71,16 +71,32 @@ end
 -- ---------- Хуки ----------
 
 --- Добавляет хук, привязанный к модулю.
-function MODULE:Hook(event, id, fn)
+-- priority передается в hook.Add как есть (поддерживается ULib и другими библиотеками хуков).
+function MODULE:Hook(event, id, fn, priority)
     self.hooks[event] = self.hooks[event] or {}
     self.hooks[event][id] = fn
-    if self.enabled then hook.Add(event, id, fn) end
+    if priority ~= nil then
+        self.hookPriority[event .. "\0" .. tostring(id)] = priority
+    end
+    if self.enabled then hook.Add(event, id, fn, priority) end
 end
 
 --- Убирает хук модуля.
 function MODULE:Unhook(event, id)
     if self.hooks[event] then self.hooks[event][id] = nil end
     hook.Remove(event, id)
+end
+
+--- Временно снимает ЧУЖОЙ хук (например, гейммода).
+-- Хук будет возвращен на место при отключении модуля.
+function MODULE:SuppressHook(event, id)
+    local list = hook.GetTable()[event]
+    local fn = list and list[id]
+    if not fn then return false end
+    self.suppressed[event] = self.suppressed[event] or {}
+    self.suppressed[event][id] = fn
+    hook.Remove(event, id)
+    return true
 end
 
 -- ---------- Таймеры ----------
@@ -198,7 +214,7 @@ function MODULE:Enable(runtime)
     for event, list in pairs(self.hooks) do
         for id, fn in pairs(list) do
             if isstring(id) or IsValid(id) then
-                hook.Add(event, id, fn)
+                hook.Add(event, id, fn, self.hookPriority[event .. "\0" .. tostring(id)])
             else
                 list[id] = nil
             end
@@ -250,6 +266,12 @@ function MODULE:Disable()
 
     for name in pairs(self.commands) do concommand.Remove(name) end
 
+    -- Возвращаем чужие хуки, снятые через SuppressHook
+    for event, list in pairs(self.suppressed) do
+        for id, fn in pairs(list) do hook.Add(event, id, fn) end
+    end
+    self.suppressed = {}
+
     for _, fn in ipairs(self.callbacks.disable) do SlashMoon.SafeCall(fn, self) end
 
     -- Убираем с карты энтити и оружие модуля
@@ -282,7 +304,8 @@ function Modules.Get(id)
         id = id,
         enabled = false,
         registered = false,
-        hooks = {}, timers = {}, receivers = {}, wrappers = {}, originals = {}, commands = {},
+        hooks = {}, hookPriority = {}, suppressed = {},
+        timers = {}, receivers = {}, wrappers = {}, originals = {}, commands = {},
         callbacks = { enable = {}, disable = {} },
         options = {}, optionDefs = {}, optionValues = {},
         entities = {}, weapons = {},

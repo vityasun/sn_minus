@@ -64,16 +64,12 @@ local SUPPRESSED_HOOKS = {
     "DrawGameTimer", "DrawKillerInterface", "DrawDead",
     "fh_killable", "fh_display_text", "FH_HudPaint_RMBHINT", "FH_HudPaint_E_HINT"
 }
-local suppressed = {}
 
+-- Гейммод может добавить свои хуки позже, поэтому проверяем постоянно.
+-- SuppressHook вернет их на место при отключении модуля.
 MODULE:Hook("Think", "SN_HUD_Suppressor", function()
-    local hudHooks = hook.GetTable().HUDPaint
-    if not hudHooks then return end
     for _, hookName in ipairs(SUPPRESSED_HOOKS) do
-        if hudHooks[hookName] then
-            suppressed[hookName] = hudHooks[hookName]
-            hook.Remove("HUDPaint", hookName)
-        end
+        MODULE:SuppressHook("HUDPaint", hookName)
     end
 end)
 
@@ -82,8 +78,6 @@ local OVERRIDDEN_GLOBALS = { "RMBHint", "RemoveRMBHint", "INTERACT_Hint", "Remov
 local originalGlobals = {}
 
 MODULE:OnDisabled(function()
-    for hookName, fn in pairs(suppressed) do hook.Add("HUDPaint", hookName, fn) end
-    suppressed = {}
     for name, fn in pairs(originalGlobals) do _G[name] = fn end
     originalGlobals = {}
 end)
