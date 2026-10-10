@@ -292,10 +292,6 @@ MODULE:Command("fh_movement_menu", function()
     Movement.OpenMenu()
 end)
 
-MODULE:Hook("PlayerBindPress", "FH_MovCfg_Hotkey", function(ply, bind, pressed)
-    if not pressed then return end
-    if string.find(string.lower(bind), "gm_showspare2") then RunConsoleCommand("fh_movement_menu"); return true end
-end)
 
 MODULE:OnDisabled(function()
     if IsValid(Movement.Frame) then Movement.Frame:Remove() end

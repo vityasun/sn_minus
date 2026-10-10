@@ -199,6 +199,58 @@ function UI.ContextMenu(width)
     return menu
 end
 
+-- ========================================================
+-- Выпадающее меню (DermaMenu в стиле темы, с подменю)
+--   local menu = SlashMoon.UI.Menu()
+--   local sub = menu:AddSubMenu("Категория")
+--   sub:AddOption("Пункт", fn):SetIcon("icon16/user.png")
+--   menu:AddSpacer()
+--   menu:Open()
+-- ========================================================
+local function StyleOption(opt, color)
+    if not IsValid(opt) then return opt end
+    opt:SetFont("SlashMoon.Small")
+    opt:SetTextColor(color or colors.Text)
+    opt:SetTall(UI.Scale(36))
+    opt.Paint = function(s, w, h)
+        if s:IsHovered() or (s.SubMenu and IsValid(s.SubMenu) and s.SubMenu:IsVisible()) then
+            Draw.Box(0, 0, w, h, colors.AccentDim)
+        end
+    end
+    return opt
+end
+
+local function StyleMenu(menu)
+    menu.Paint = function(_, w, h)
+        Draw.RoundedBox(UI.Scale(4), 0, 0, w, h, colors.Header)
+        Draw.RoundedOutline(UI.Scale(4), 0, 0, w, h, colors.Border)
+    end
+
+    local addOption = menu.AddOption
+    function menu:AddOption(text, fn)
+        return StyleOption(addOption(self, text, fn))
+    end
+
+    --- Пункт с собственным цветом текста (например, опасное действие).
+    function menu:AddColoredOption(text, color, fn)
+        return StyleOption(addOption(self, text, fn), color)
+    end
+
+    local addSubMenu = menu.AddSubMenu
+    function menu:AddSubMenu(text, fn)
+        local sub, opt = addSubMenu(self, text, fn)
+        StyleMenu(sub)
+        StyleOption(opt)
+        return sub, opt
+    end
+
+    return menu
+end
+
+function UI.Menu(parent)
+    return StyleMenu(DermaMenu(false, parent))
+end
+
 --- Меню действий (список кнопок по центру экрана, клик мимо — закрыть).
 -- buttons: { { text = "...", color = Color|nil, onClick = function() end }, ... }
 function UI.ActionMenu(title, buttons)
